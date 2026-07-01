@@ -237,7 +237,7 @@ export class Renderer {
     this.ctx.fillStyle = "rgba(5,8,22,0.82)";
     this.ctx.fillRect(0, FOOTER_Y, BASE_WIDTH, FOOTER_H);
     const controls = isMobile
-      ? "Enter: Start  |  Touch controls on mobile"
+      ? "Tap PLAY to start  |  Controls appear below during gameplay"
       : "Enter: Start  |  F11: Fullscreen";
     this.centeredWrapped(controls, FOOTER_Y + 14, {
       font: "32px sans-serif",
@@ -313,7 +313,7 @@ export class Renderer {
     });
   }
 
-  drawCutscene(lineIndex, portraits, bg) {
+  drawCutscene(lineIndex, portraits, bg, isMobile = false) {
     this.blit(bg, 0, 0);
     this.overlay(0.63);
     this.centeredText(["FINAL CONFRONTATION"], sc(50), {
@@ -360,16 +360,18 @@ export class Renderer {
 
     wrapText(this.ctx, line.text, dialogRect[0] + sc(15), dialogRect[1] + sc(65), dialogRect[2] - sc(30), 28);
 
-    const prompt =
-      lineIndex >= CUTSCENE_LINES.length - 1
-        ? "Press Enter / Space / Fire to begin Level 6"
-        : "Press Enter / Space / Fire to continue";
-    this.centeredWrapped(prompt, sc(565), {
-      font: "32px sans-serif",
-      color: "rgb(255,215,0)",
-      lineGap: sc(26),
-      maxWidth: BASE_WIDTH - sc(80),
-    });
+    if (!isMobile) {
+      const prompt =
+        lineIndex >= CUTSCENE_LINES.length - 1
+          ? "Press Enter or Space to begin Level 6"
+          : "Press Enter or Space to continue";
+      this.centeredWrapped(prompt, sc(565), {
+        font: "32px sans-serif",
+        color: "rgb(255,215,0)",
+        lineGap: sc(26),
+        maxWidth: BASE_WIDTH - sc(80),
+      });
+    }
   }
 
   drawLevelComplete(levelIndex, score, highScore) {

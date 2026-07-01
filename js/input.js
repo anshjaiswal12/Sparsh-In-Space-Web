@@ -6,6 +6,7 @@ export class InputManager {
     this.touchLeft = false;
     this.touchRight = false;
     this.touchFire = false;
+    this.advanceRequested = false;
     this.pointer = { x: 0, y: 0 };
 
     window.addEventListener("keydown", (e) => {
@@ -16,10 +17,11 @@ export class InputManager {
     });
     window.addEventListener("keyup", (e) => this.keys.delete(e.key));
 
-    this._bindTouchButtons();
+    this._bindPlayButtons();
+    this._bindDialogueButton();
   }
 
-  _bindTouchButtons() {
+  _bindPlayButtons() {
     const left = document.getElementById("btn-left");
     const right = document.getElementById("btn-right");
     const fire = document.getElementById("btn-fire");
@@ -40,6 +42,16 @@ export class InputManager {
     hold(fire, (v) => { this.touchFire = v; });
   }
 
+  _bindDialogueButton() {
+    const advance = document.getElementById("btn-advance");
+    const request = (e) => {
+      e.preventDefault();
+      this.advanceRequested = true;
+    };
+    advance.addEventListener("touchstart", request, { passive: false });
+    advance.addEventListener("click", request);
+  }
+
   isDown(key) {
     return this.keys.has(key);
   }
@@ -54,6 +66,12 @@ export class InputManager {
 
   wantsFire() {
     return this.keys.has(" ") || this.touchFire;
+  }
+
+  consumeAdvance() {
+    const requested = this.advanceRequested;
+    this.advanceRequested = false;
+    return requested;
   }
 
   /** Map screen coords to internal game coords */

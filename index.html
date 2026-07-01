@@ -11,12 +11,28 @@
 </head>
 <body>
   <div id="app">
-    <canvas id="game" width="1280" height="960" aria-label="Sparsh in Space game canvas"></canvas>
+    <div id="game-wrap">
+      <canvas id="game" width="1280" height="960" aria-label="Sparsh in Space game canvas"></canvas>
+    </div>
 
-    <div id="touch-controls" aria-hidden="true">
-      <button id="btn-left" type="button" aria-label="Move left">◀</button>
-      <button id="btn-right" type="button" aria-label="Move right">▶</button>
-      <button id="btn-fire" type="button" aria-label="Fire">FIRE</button>
+    <div id="control-bar" aria-hidden="true">
+      <div id="play-controls" class="control-panel">
+        <div class="move-group">
+          <button id="btn-left" type="button" aria-label="Move left">◀</button>
+          <button id="btn-right" type="button" aria-label="Move right">▶</button>
+        </div>
+        <button id="btn-fire" type="button" class="fire-btn" aria-label="Fire">FIRE</button>
+      </div>
+
+      <div id="dialogue-controls" class="control-panel hidden">
+        <div class="dialogue-meta">
+          <span class="dialogue-badge">STORY</span>
+          <span id="dialogue-progress" class="dialogue-progress">1 / 6</span>
+        </div>
+        <button id="btn-advance" type="button" class="advance-btn" aria-label="Continue dialogue">
+          Continue ▶
+        </button>
+      </div>
     </div>
 
     <div id="loader">Loading Sparsh in Space…</div>

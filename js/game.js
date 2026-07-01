@@ -368,7 +368,8 @@ export class Game {
 
     if (this.state === GameState.STORY_CUTSCENE) {
       r.clear();
-      r.drawCutscene(this.cutsceneLineIndex, this.portraits, this.backgrounds.bg6);
+      const isMobile = window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 900;
+      r.drawCutscene(this.cutsceneLineIndex, this.portraits, this.backgrounds.bg6, isMobile);
       return;
     }
 
@@ -433,11 +434,9 @@ export class Game {
     if (this.state === GameState.PLAYING) {
       this.updatePlaying(now);
     } else if (this.state === GameState.STORY_CUTSCENE) {
-      if (this.input.wantsFire() && !this.fireHeld) {
+      if (this.input.consumeAdvance()) {
         this.advanceCutscene();
-        this.fireHeld = true;
       }
-      if (!this.input.wantsFire()) this.fireHeld = false;
       this.tickTransition(now);
     } else {
       this.tickTransition(now);

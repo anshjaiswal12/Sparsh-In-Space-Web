@@ -1,46 +1,61 @@
 /** Entry point — canvas sizing, boot, game loop */
 
 import { preloadGameAssets } from "./assets.js";
-import { BASE_HEIGHT, BASE_WIDTH, GameState } from "./config.js";
+import { BASE_HEIGHT, BASE_WIDTH, CUTSCENE_LINES, GameState } from "./config.js";
 import { Game } from "./game.js";
 import { InputManager } from "./input.js";
 
+const MOBILE_BAR_HEIGHT = 80;
+
+const app = document.getElementById("app");
 const canvas = document.getElementById("game");
 const loader = document.getElementById("loader");
-const touchControls = document.getElementById("touch-controls");
+const controlBar = document.getElementById("control-bar");
+const playControls = document.getElementById("play-controls");
+const dialogueControls = document.getElementById("dialogue-controls");
+const dialogueProgress = document.getElementById("dialogue-progress");
 const ctx = canvas.getContext("2d");
 
 let scale = 1;
-let displayWidth = 0;
-let displayHeight = 0;
-let touchControlsEnabled = false;
-let touchControlsActive = false;
+let mobileUiEnabled = false;
 
 function isMobileDevice() {
   return window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 900;
 }
 
-function syncTouchControlsVisible() {
-  touchControls.classList.toggle("visible", touchControlsEnabled && touchControlsActive);
+function syncMobileUiVisible(playing, dialogue) {
+  controlBar.classList.toggle("visible", mobileUiEnabled && (playing || dialogue));
+  playControls.classList.toggle("hidden", !playing);
+  dialogueControls.classList.toggle("hidden", !dialogue);
 }
 
-export function updateTouchControlsForState(state) {
-  touchControlsActive = state === GameState.PLAYING || state === GameState.STORY_CUTSCENE;
-  syncTouchControlsVisible();
-}
+export function updateMobileUiForState(state, cutsceneLineIndex = 0) {
+  const playing = state === GameState.PLAYING;
+  const dialogue = state === GameState.STORY_CUTSCENE;
+  syncMobileUiVisible(playing, dialogue);
 
-function positionTouchOverlay() {
-  const rect = canvas.getBoundingClientRect();
-  touchControls.style.left = `${rect.left}px`;
-  touchControls.style.top = `${rect.top}px`;
-  touchControls.style.width = `${rect.width}px`;
-  touchControls.style.height = `${rect.height}px`;
+  if (dialogue) {
+    const line = cutsceneLineIndex + 1;
+    const total = CUTSCENE_LINES.length;
+    const isLast = cutsceneLineIndex >= total - 1;
+    dialogueProgress.textContent = `${line} / ${total}`;
+    document.getElementById("btn-advance").textContent = isLast
+      ? "Begin Level 6 ▶"
+      : "Continue ▶";
+  }
 }
 
 function resize() {
+  const mobile = isMobileDevice();
+  mobileUiEnabled = mobile;
+  app.classList.toggle("mobile", mobile);
+
   const vv = window.visualViewport;
   const vw = vv?.width ?? window.innerWidth;
-  const vh = vv?.height ?? window.innerHeight;
+  const fullVh = vv?.height ?? window.innerHeight;
+  const barH = mobile ? MOBILE_BAR_HEIGHT : 0;
+  const vh = Math.max(fullVh - barH, 120);
+
   const aspect = BASE_WIDTH / BASE_HEIGHT;
   let w, h;
   if (vw / vh > aspect) {
@@ -50,8 +65,7 @@ function resize() {
     w = vw;
     h = w / aspect;
   }
-  displayWidth = w;
-  displayHeight = h;
+
   scale = w / BASE_WIDTH;
 
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -61,9 +75,11 @@ function resize() {
   canvas.style.height = `${h}px`;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-  touchControlsEnabled = isMobileDevice();
-  requestAnimationFrame(positionTouchOverlay);
-  syncTouchControlsVisible();
+  if (mobile) {
+    controlBar.style.width = `${w}px`;
+  } else {
+    controlBar.style.width = "";
+  }
 }
 
 const input = new InputManager();
@@ -97,7 +113,6 @@ window.addEventListener("orientationchange", () => {
 });
 if (window.visualViewport) {
   window.visualViewport.addEventListener("resize", resize);
-  window.visualViewport.addEventListener("scroll", positionTouchOverlay);
 }
 
 function loop(timestamp) {
@@ -112,7 +127,7 @@ function loop(timestamp) {
   }
 
   game.draw(performance.now());
-  updateTouchControlsForState(game.state);
+  updateMobileUiForState(game.state, game.cutsceneLineIndex);
   requestAnimationFrame(loop);
 }
 

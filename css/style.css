@@ -23,6 +23,7 @@ body {
   height: 100vh;
   height: 100dvh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   background: radial-gradient(ellipse at center, #0a1530 0%, #000 70%);
@@ -31,6 +32,15 @@ body {
     env(safe-area-inset-right, 0px)
     env(safe-area-inset-bottom, 0px)
     env(safe-area-inset-left, 0px);
+}
+
+#game-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #game {
@@ -55,90 +65,148 @@ body {
   display: none;
 }
 
-/* Touch controls — anchored to canvas via JS (main.js) */
-#touch-controls {
+/* Control bar — sits below the canvas on mobile */
+#control-bar {
   display: none;
-  position: fixed;
-  pointer-events: none;
-  z-index: 10;
+  flex: 0 0 auto;
+  width: 100%;
+  min-height: 80px;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, rgba(8, 12, 30, 0.98) 0%, rgba(5, 8, 22, 1) 100%);
+  border-top: 2px solid rgba(135, 206, 250, 0.35);
+  box-shadow: 0 -4px 24px rgba(0, 40, 100, 0.35);
 }
 
-#touch-controls.visible {
-  display: block;
+#app.mobile #control-bar.visible {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-#touch-controls button {
-  pointer-events: auto;
-  position: absolute;
+.control-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 640px;
+  gap: 12px;
+}
+
+.control-panel.hidden {
+  display: none;
+}
+
+/* Gameplay controls */
+.move-group {
+  display: flex;
+  gap: 10px;
+}
+
+#play-controls button {
   border: 2px solid rgba(255, 215, 0, 0.85);
   border-radius: 12px;
-  background: rgba(40, 90, 170, 0.75);
+  background: rgba(40, 90, 170, 0.9);
   color: #fff;
-  font-size: clamp(0.9rem, 3.5vw, 1.4rem);
   font-weight: bold;
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
-  backdrop-filter: blur(4px);
 }
 
-#touch-controls button:active {
-  background: rgba(70, 140, 220, 0.9);
-}
-
-#btn-left {
-  left: max(8px, 2%);
-  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-  width: clamp(56px, 16%, 96px);
-  height: clamp(56px, 16%, 96px);
-}
-
+#btn-left,
 #btn-right {
-  left: calc(max(8px, 2%) + clamp(60px, 17%, 104px));
-  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-  width: clamp(56px, 16%, 96px);
-  height: clamp(56px, 16%, 96px);
+  width: clamp(56px, 14vw, 72px);
+  height: clamp(56px, 14vw, 72px);
+  font-size: clamp(1.1rem, 4vw, 1.5rem);
 }
 
 #btn-fire {
-  right: max(8px, 2%);
-  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-  width: clamp(72px, 22%, 120px);
-  height: clamp(56px, 16%, 96px);
+  min-width: clamp(88px, 22vw, 120px);
+  height: clamp(56px, 14vw, 72px);
+  padding: 0 20px;
+  font-size: clamp(1rem, 3.5vw, 1.25rem);
+  letter-spacing: 0.06em;
 }
 
-@media (max-height: 700px) {
-  #btn-left,
-  #btn-right,
-  #btn-fire {
-    width: clamp(48px, 14%, 80px);
-    height: clamp(48px, 14%, 80px);
-    font-size: clamp(0.8rem, 3vw, 1.1rem);
-  }
+#play-controls button:active {
+  background: rgba(70, 140, 220, 1);
+  transform: scale(0.97);
+}
 
-  #btn-right {
-    left: calc(max(8px, 2%) + clamp(52px, 15%, 88px));
-  }
+/* Dialogue / cutscene controls */
+#dialogue-controls {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
 
-  #btn-fire {
-    width: clamp(64px, 18%, 100px);
-  }
+.dialogue-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.dialogue-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 6px;
+  background: rgba(255, 215, 0, 0.15);
+  border: 1px solid rgba(255, 215, 0, 0.6);
+  color: rgb(255, 215, 0);
+  font-size: 0.75rem;
+  font-weight: bold;
+  letter-spacing: 0.12em;
+}
+
+.dialogue-progress {
+  color: rgb(180, 200, 230);
+  font-size: 0.85rem;
+}
+
+.advance-btn {
+  width: 100%;
+  height: clamp(52px, 12vw, 64px);
+  border: 2px solid rgba(255, 215, 0, 0.75);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(50, 80, 140, 0.95) 0%, rgba(30, 55, 110, 0.95) 100%);
+  color: #fff;
+  font-size: clamp(1rem, 3.5vw, 1.2rem);
+  font-weight: bold;
+  letter-spacing: 0.04em;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.advance-btn:active {
+  background: linear-gradient(180deg, rgba(70, 120, 190, 1) 0%, rgba(45, 75, 140, 1) 100%);
+  transform: scale(0.98);
 }
 
 @media (max-height: 500px) and (orientation: landscape) {
+  #control-bar {
+    min-height: 64px;
+    padding: 6px 12px calc(6px + env(safe-area-inset-bottom, 0px));
+  }
+
   #btn-left,
   #btn-right,
   #btn-fire {
-    bottom: calc(6px + env(safe-area-inset-bottom, 0px));
-    width: clamp(44px, 12%, 72px);
-    height: clamp(44px, 12%, 72px);
-  }
-
-  #btn-right {
-    left: calc(max(8px, 2%) + clamp(48px, 13%, 76px));
+    width: clamp(48px, 11vw, 60px);
+    height: clamp(48px, 11vw, 60px);
+    min-width: unset;
+    padding: 0;
+    font-size: 0.95rem;
   }
 
   #btn-fire {
-    width: clamp(60px, 16%, 96px);
+    min-width: clamp(72px, 16vw, 96px);
+    padding: 0 12px;
+  }
+
+  .advance-btn {
+    height: 48px;
+    font-size: 0.95rem;
   }
 }
