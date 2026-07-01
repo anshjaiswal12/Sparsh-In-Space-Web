@@ -111,6 +111,22 @@ body {
   justify-content: center;
 }
 
+#app.end-game #control-bar.visible {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#app.story-open #control-bar.visible {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#story-menu-controls {
+  width: 100%;
+}
+
 .control-panel {
   display: flex;
   align-items: center;
@@ -210,6 +226,41 @@ body {
 .advance-btn:active {
   background: linear-gradient(180deg, rgba(70, 120, 190, 1) 0%, rgba(45, 75, 140, 1) 100%);
   transform: scale(0.98);
+}
+
+/* End-of-run controls — game over / victory */
+#end-controls {
+  justify-content: center;
+  gap: 16px;
+}
+
+.end-btn {
+  flex: 1;
+  max-width: 220px;
+  height: clamp(52px, 12vw, 64px);
+  border-radius: 12px;
+  font-size: clamp(0.95rem, 3.5vw, 1.15rem);
+  font-weight: bold;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.end-btn-retry {
+  border: 2px solid rgba(255, 215, 0, 0.85);
+  background: rgba(40, 90, 170, 0.9);
+  color: #fff;
+}
+
+.end-btn-menu {
+  border: 2px solid rgba(135, 206, 250, 0.75);
+  background: rgba(25, 45, 90, 0.9);
+  color: rgb(200, 220, 255);
+}
+
+.end-btn:active {
+  transform: scale(0.97);
+  filter: brightness(1.15);
 }
 
 @media (max-height: 500px) and (orientation: landscape) {

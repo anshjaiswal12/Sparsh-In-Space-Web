@@ -15,6 +15,8 @@ const loader = document.getElementById("loader");
 const controlBar = document.getElementById("control-bar");
 const playControls = document.getElementById("play-controls");
 const dialogueControls = document.getElementById("dialogue-controls");
+const endControls = document.getElementById("end-controls");
+const storyMenuControls = document.getElementById("story-menu-controls");
 const dialogueProgress = document.getElementById("dialogue-progress");
 const pilotNameEl = document.getElementById("pilot-name-input");
 const ctx = canvas.getContext("2d");
@@ -22,6 +24,7 @@ const ctx = canvas.getContext("2d");
 let scale = 1;
 let mobileUiEnabled = false;
 let lastPilotMenuKey = "";
+let lastControlBarHeight = -1;
 
 const pilotNameInput = new PilotNameInput(pilotNameEl, canvas, () => scale);
 
@@ -29,18 +32,44 @@ function isMobileDevice() {
   return window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 900;
 }
 
-function syncMobileUiVisible(playing, dialogue) {
-  controlBar.classList.toggle("visible", mobileUiEnabled && (playing || dialogue));
-  playControls.classList.toggle("hidden", !playing);
-  dialogueControls.classList.toggle("hidden", !dialogue);
+function controlBarHeightForState(state, showStoryPanel = false) {
+  if (!state) return 0;
+  const endGame = state === GameState.GAME_OVER || state === GameState.VICTORY;
+  if (endGame) return MOBILE_BAR_HEIGHT;
+  const storyOpen = state === GameState.MENU && showStoryPanel;
+  if (storyOpen && mobileUiEnabled) return MOBILE_BAR_HEIGHT;
+  if (!mobileUiEnabled) return 0;
+  return state === GameState.PLAYING || state === GameState.STORY_CUTSCENE
+    ? MOBILE_BAR_HEIGHT
+    : 0;
 }
 
-export function updateMobileUiForState(state, cutsceneLineIndex = 0) {
+function syncControlBar(state, showStoryPanel = false) {
   const playing = state === GameState.PLAYING;
   const dialogue = state === GameState.STORY_CUTSCENE;
-  syncMobileUiVisible(playing, dialogue);
+  const endGame = state === GameState.GAME_OVER || state === GameState.VICTORY;
+  const storyOpen = state === GameState.MENU && showStoryPanel;
+  const showBar = (mobileUiEnabled && (playing || dialogue || storyOpen)) || endGame;
 
-  if (dialogue) {
+  controlBar.classList.toggle("visible", showBar);
+  playControls.classList.toggle("hidden", !playing);
+  dialogueControls.classList.toggle("hidden", !dialogue);
+  endControls.classList.toggle("hidden", !endGame);
+  storyMenuControls.classList.toggle("hidden", !storyOpen);
+  app.classList.toggle("end-game", endGame);
+  app.classList.toggle("story-open", storyOpen);
+}
+
+export function updateMobileUiForState(state, cutsceneLineIndex = 0, showStoryPanel = false) {
+  syncControlBar(state, showStoryPanel);
+
+  const barH = controlBarHeightForState(state, showStoryPanel);
+  if (barH !== lastControlBarHeight) {
+    lastControlBarHeight = barH;
+    resize(state, showStoryPanel);
+  }
+
+  if (state === GameState.STORY_CUTSCENE) {
     const line = cutsceneLineIndex + 1;
     const total = CUTSCENE_LINES.length;
     const isLast = cutsceneLineIndex >= total - 1;
@@ -73,15 +102,18 @@ function updatePilotNameInput() {
   lastPilotMenuKey = menuKey;
 }
 
-function resize() {
+function resize(gameState = null, showStoryPanel = null) {
   const mobile = isMobileDevice();
   mobileUiEnabled = mobile;
   app.classList.toggle("mobile", mobile);
 
+  const state = gameState ?? game?.state ?? null;
+  const storyOpen = showStoryPanel ?? game?.menu?.showStoryPanel ?? false;
+  const barH = controlBarHeightForState(state, storyOpen);
+
   const vv = window.visualViewport;
   const vw = vv?.width ?? window.innerWidth;
   const fullVh = vv?.height ?? window.innerHeight;
-  const barH = mobile ? MOBILE_BAR_HEIGHT : 0;
   const vh = Math.max(fullVh - barH, 120);
 
   const aspect = BASE_WIDTH / BASE_HEIGHT;
@@ -103,7 +135,8 @@ function resize() {
   canvas.style.height = `${h}px`;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-  if (mobile) {
+  if (mobile || state === GameState.GAME_OVER || state === GameState.VICTORY
+    || (state === GameState.MENU && storyOpen)) {
     controlBar.style.width = `${w}px`;
   } else {
     controlBar.style.width = "";
@@ -176,7 +209,7 @@ function loop(timestamp) {
   }
 
   game.draw(performance.now());
-  updateMobileUiForState(game.state, game.cutsceneLineIndex);
+  updateMobileUiForState(game.state, game.cutsceneLineIndex, game.menu.showStoryPanel);
   updatePilotNameInput();
   requestAnimationFrame(loop);
 }
@@ -188,6 +221,27 @@ async function boot() {
     game = new Game(canvas, input);
     game.setPilotNameInput(pilotNameInput);
     await game.init();
+
+    input.setEndGameHandlers({
+      onRetry: () => {
+        if (game.state === GameState.GAME_OVER || game.state === GameState.VICTORY) {
+          game.resetRun();
+        }
+      },
+      onMainMenu: () => {
+        if (game.state === GameState.GAME_OVER || game.state === GameState.VICTORY) {
+          game.goToMenu();
+        }
+      },
+    });
+
+    input.setStoryMenuHandlers({
+      onStoryClose: () => {
+        if (game.state === GameState.MENU && game.menu.showStoryPanel) {
+          game.closeStoryPanel();
+        }
+      },
+    });
 
     pilotNameInput.bind({
       onChange: (value) => {

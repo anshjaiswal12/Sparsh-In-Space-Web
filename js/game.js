@@ -72,6 +72,8 @@ export class Game {
       showStoryPanel: false,
       playButton: [...MENU_LAYOUT.PLAY_BUTTON],
       storyButton: [...MENU_LAYOUT.STORY_BUTTON],
+      storyPanel: [...MENU_LAYOUT.STORY_PANEL],
+      storyCloseButton: [...MENU_LAYOUT.STORY_CLOSE_BUTTON],
       nameBox: [...MENU_LAYOUT.NAME_BOX],
     };
 
@@ -274,6 +276,21 @@ export class Game {
     return levelCleared;
   }
 
+  handleStoryPanelInput(pointer) {
+    const m = this.menu;
+    if (pointInRect(pointer, m.storyCloseButton)) {
+      m.showStoryPanel = false;
+      return;
+    }
+    if (!pointInRect(pointer, m.storyPanel)) {
+      m.showStoryPanel = false;
+    }
+  }
+
+  closeStoryPanel() {
+    this.menu.showStoryPanel = false;
+  }
+
   handleMenuInput(pointer) {
     const m = this.menu;
     if (m.showStoryPanel) return;
@@ -419,23 +436,24 @@ export class Game {
     }
 
     if (this.state === GameState.GAME_OVER) {
+      const showActionBar = true;
       r.drawGameOver({
         playerName: this.playerName,
         score: this.score,
         highScore: this.highScore,
         isNewHighScore: this.isNewHighScore,
-      });
-      r.blit(playerSprite, this.player.x, this.player.y);
+      }, showActionBar);
       return;
     }
 
     if (this.state === GameState.VICTORY) {
+      const showActionBar = true;
       r.drawVictory({
         score: this.score,
         highScore: this.highScore,
         isNewHighScore: this.isNewHighScore,
-      });
-      r.blit(playerSprite, this.player.x, this.player.y);
+      }, showActionBar);
+      return;
     }
   }
 
@@ -478,8 +496,8 @@ export class Game {
 
   handleClick(pointer) {
     if (this.state === GameState.MENU) {
-      if (this.menu.showStoryPanel && pointInRect(pointer, this.menu.storyButton)) {
-        this.menu.showStoryPanel = false;
+      if (this.menu.showStoryPanel) {
+        this.handleStoryPanelInput(pointer);
         return;
       }
       this.handleMenuInput(pointer);

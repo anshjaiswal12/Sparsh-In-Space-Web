@@ -257,15 +257,15 @@ export class Renderer {
     this.button(playRect, "PLAY", pointInRect(pointer, playRect));
     this.button(storyRect, "STORY", pointInRect(pointer, storyRect), menu.showStoryPanel);
 
-    if (menu.showStoryPanel) this.drawStoryPanel();
+    if (menu.showStoryPanel) this.drawStoryPanel(menu, pointer, isMobile);
 
     this.drawMenuFooter(isMobile);
   }
 
-  drawStoryPanel() {
+  drawStoryPanel(menu, pointer, isMobile = false) {
     this.ctx.fillStyle = "rgba(0,0,0,0.82)";
     this.ctx.fillRect(0, 0, BASE_WIDTH, BASE_HEIGHT);
-    const panel = [sc(80), sc(60), sc(640), sc(480)];
+    const panel = menu.storyPanel;
     this.panel(...panel, 0.9);
     this.text("STORY", panel[0] + sc(20), panel[1] + sc(40), {
       font: "36px sans-serif",
@@ -285,8 +285,15 @@ export class Renderer {
         lineGap: sc(26),
       });
     });
-    this.centeredWrapped("Press Esc or tap STORY to close", panel[1] + panel[3] - sc(36), {
-      font: "32px sans-serif",
+
+    const closeRect = menu.storyCloseButton;
+    this.button(closeRect, "CLOSE", pointInRect(pointer, closeRect));
+
+    const hint = isMobile
+      ? "Tap Close below or outside the panel to return"
+      : "Press Esc or tap Close to return";
+    this.centeredWrapped(hint, panel[1] + panel[3] - sc(52), {
+      font: "28px sans-serif",
       color: "#aaa",
       maxWidth: innerW,
       lineGap: sc(24),
@@ -380,49 +387,55 @@ export class Renderer {
     );
   }
 
-  drawGameOver({ playerName, score, highScore, isNewHighScore }) {
+  drawGameOver({ playerName, score, highScore, isNewHighScore }, showActionBar = false) {
     this.overlay();
-    this.centeredText(["Game Over"], sc(220), { font: "80px sans-serif" });
+    this.centeredText(["Game Over"], sc(200), { font: "80px sans-serif" });
     this.centeredText(
       [`Pilot: ${playerName}`, `Score: ${score}`, `Top Score: ${highScore}`],
-      sc(310),
+      sc(290),
       { font: "42px sans-serif", lineGap: 38 },
     );
     if (isNewHighScore) {
-      this.centeredText(["NEW HIGH SCORE!"], sc(410), {
+      this.centeredText(["NEW HIGH SCORE!"], sc(390), {
         font: "42px sans-serif",
         color: "rgb(255,215,0)",
       });
     }
-    this.centeredText(["R: Play Again   |   M: Main Menu"], sc(490), {
+    const prompt = showActionBar
+      ? "Use the buttons below to continue"
+      : "R: Play Again   |   M: Main Menu";
+    this.centeredText([prompt], sc(460), {
       font: "32px sans-serif",
       lineGap: 40,
     });
   }
 
-  drawVictory({ score, highScore, isNewHighScore }) {
+  drawVictory({ score, highScore, isNewHighScore }, showActionBar = false) {
     this.overlay();
-    this.centeredText(["YOU WIN!"], sc(190), {
+    this.centeredText(["YOU WIN!"], sc(170), {
       font: "80px sans-serif",
       color: "rgb(255,215,0)",
     });
     this.centeredText(
       ["All 6 levels cleared!", `Final Score: ${score}`, `High Score: ${highScore}`],
-      sc(280),
+      sc(260),
       { font: "42px sans-serif", lineGap: 38 },
     );
     if (isNewHighScore) {
-      this.centeredText(["NEW HIGH SCORE!"], sc(400), {
+      this.centeredText(["NEW HIGH SCORE!"], sc(370), {
         font: "42px sans-serif",
         color: "rgb(255,215,0)",
       });
     }
     this.centeredText(
       ["Contact the creator:", VICTORY_EMAIL],
-      sc(450),
+      sc(420),
       { font: "42px sans-serif", color: "rgb(135,206,250)", lineGap: 35 },
     );
-    this.centeredText(["Press R to Restart   |   M: Main Menu"], sc(550), {
+    const prompt = showActionBar
+      ? "Use the buttons below to continue"
+      : "Press R to Restart   |   M: Main Menu";
+    this.centeredText([prompt], sc(500), {
       font: "32px sans-serif",
       lineGap: 40,
     });

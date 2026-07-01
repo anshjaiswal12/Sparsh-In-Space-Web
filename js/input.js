@@ -21,6 +21,11 @@ export class InputManager {
 
     this._bindPlayButtons();
     this._bindDialogueButton();
+    this._bindEndButtons();
+    this._bindStoryCloseButton();
+    this.onRetry = null;
+    this.onMainMenu = null;
+    this.onStoryClose = null;
   }
 
   _bindPlayButtons() {
@@ -52,6 +57,38 @@ export class InputManager {
     };
     advance.addEventListener("touchstart", request, { passive: false });
     advance.addEventListener("click", request);
+  }
+
+  _bindEndButtons() {
+    const retry = document.getElementById("btn-retry");
+    const menu = document.getElementById("btn-menu");
+    const fire = (handler) => (e) => {
+      e.preventDefault();
+      handler?.();
+    };
+    retry.addEventListener("click", fire(() => this.onRetry?.()));
+    retry.addEventListener("touchstart", fire(() => this.onRetry?.()), { passive: false });
+    menu.addEventListener("click", fire(() => this.onMainMenu?.()));
+    menu.addEventListener("touchstart", fire(() => this.onMainMenu?.()), { passive: false });
+  }
+
+  setEndGameHandlers({ onRetry, onMainMenu }) {
+    this.onRetry = onRetry;
+    this.onMainMenu = onMainMenu;
+  }
+
+  _bindStoryCloseButton() {
+    const close = document.getElementById("btn-story-close");
+    const fire = (handler) => (e) => {
+      e.preventDefault();
+      handler?.();
+    };
+    close.addEventListener("click", fire(() => this.onStoryClose?.()));
+    close.addEventListener("touchstart", fire(() => this.onStoryClose?.()), { passive: false });
+  }
+
+  setStoryMenuHandlers({ onStoryClose }) {
+    this.onStoryClose = onStoryClose;
   }
 
   isDown(key) {
