@@ -1,0 +1,112 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, #0a1530 0%, #000 70%);
+}
+
+#game {
+  display: block;
+  image-rendering: auto;
+  box-shadow: 0 0 40px rgba(0, 80, 160, 0.35);
+}
+
+#loader {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+  color: #87cefa;
+  font-size: clamp(1rem, 4vw, 1.5rem);
+  z-index: 20;
+}
+
+#loader.hidden {
+  display: none;
+}
+
+/* Touch controls — shown on mobile / coarse pointers */
+#touch-controls {
+  display: none;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+#touch-controls.visible {
+  display: block;
+}
+
+#touch-controls button {
+  pointer-events: auto;
+  position: absolute;
+  border: 2px solid rgba(255, 215, 0, 0.85);
+  border-radius: 12px;
+  background: rgba(40, 90, 170, 0.75);
+  color: #fff;
+  font-size: clamp(1rem, 4vw, 1.4rem);
+  font-weight: bold;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  backdrop-filter: blur(4px);
+}
+
+#touch-controls button:active {
+  background: rgba(70, 140, 220, 0.9);
+}
+
+#btn-left {
+  left: max(12px, 2vw);
+  bottom: max(16px, 3vh);
+  width: clamp(64px, 18vw, 96px);
+  height: clamp(64px, 18vw, 96px);
+}
+
+#btn-right {
+  left: calc(max(12px, 2vw) + clamp(72px, 20vw, 108px));
+  bottom: max(16px, 3vh);
+  width: clamp(64px, 18vw, 96px);
+  height: clamp(64px, 18vw, 96px);
+}
+
+#btn-fire {
+  right: max(12px, 2vw);
+  bottom: max(16px, 3vh);
+  width: clamp(88px, 24vw, 120px);
+  height: clamp(64px, 18vw, 96px);
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  #btn-left,
+  #btn-right,
+  #btn-fire {
+    bottom: 8px;
+    height: 56px;
+  }
+}
