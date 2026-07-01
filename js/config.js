@@ -99,14 +99,19 @@ export function bulletOffsets(count) {
 }
 
 /** Main menu layout — 1280×960 pixel coords, panels must not overlap */
+const NAME_PANEL_Y = 175;
+const NAME_PANEL_H = 168;
+
 export const MENU_LAYOUT = {
   MARGIN: 64,
   PANEL_W: 400,
   BTN_W: 240,
   BTN_H: 52,
   get BTN_X() { return (BASE_WIDTH - this.BTN_W) / 2; },
-  NAME_PANEL: [64, 175, 400, 155],
-  NAME_BOX: [84, 245, 360, 44],
+  NAME_PANEL: [64, NAME_PANEL_Y, 400, NAME_PANEL_H],
+  NAME_LABEL_Y: NAME_PANEL_Y + 20,
+  NAME_HINT_Y: NAME_PANEL_Y + 56,
+  NAME_BOX: [84, NAME_PANEL_Y + 88, 360, 52],
   SCORES_PANEL: [BASE_WIDTH - 64 - 400, 175, 400, 360],
   PLAY_BUTTON: null,
   STORY_BUTTON: null,

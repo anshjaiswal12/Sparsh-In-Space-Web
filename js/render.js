@@ -180,52 +180,31 @@ export class Renderer {
     });
   }
 
-  drawMenuFooter(isMobile) {
-    const { FOOTER_Y, FOOTER_H } = MENU_LAYOUT;
-    this.ctx.fillStyle = "rgba(5,8,22,0.82)";
-    this.ctx.fillRect(0, FOOTER_Y, BASE_WIDTH, FOOTER_H);
-    const controls = isMobile
-      ? "Enter: Start  |  Touch controls on mobile"
-      : "Enter: Start (when name done)  |  F11: Fullscreen";
-    this.centeredWrapped(controls, FOOTER_Y + 14, {
-      font: "32px sans-serif",
-      color: "#ccc",
-      lineGap: sc(24),
-      maxWidth: BASE_WIDTH - sc(48),
-    });
-    this.centeredWrapped("An Ansh Jaiswal production", FOOTER_Y + 46, {
-      font: "28px sans-serif",
-      color: "rgb(160,175,200)",
-      lineGap: sc(24),
-      maxWidth: BASE_WIDTH - sc(48),
-    });
+  drawMenuBackground() {
+    const g = this.ctx.createLinearGradient(0, 0, 0, BASE_HEIGHT);
+    g.addColorStop(0, "rgb(6,10,28)");
+    g.addColorStop(1, "rgb(10,16,46)");
+    this.ctx.fillStyle = g;
+    this.ctx.fillRect(0, 0, BASE_WIDTH, BASE_HEIGHT);
   }
 
-  drawMenu(menu, bg, pointer, isMobile = false) {
-    this.blit(bg, 0, 0);
-    this.overlay(0.78);
-
-    // Darken header so background title art doesn't clash
-    this.ctx.fillStyle = "rgba(0,0,0,0.55)";
-    this.ctx.fillRect(0, 0, BASE_WIDTH, sc(155));
-
-    this.centeredText(["SPARSH IN SPACE"], sc(35), {
-      font: "bold 72px sans-serif",
-    });
-    this.centeredWrapped(
-      "Arthur Tesla vs. Sparsh Akuma — the Chunking Express ends here.",
-      sc(92),
-      { font: "32px sans-serif", color: "rgb(180,210,255)", lineGap: sc(28) },
-    );
-
-    const namePanel = MENU_LAYOUT.NAME_PANEL;
-    this.panel(...namePanel);
-    this.text("PILOT NAME", namePanel[0] + 20, namePanel[1] + 35, {
+  drawNamePanel(menu) {
+    const { NAME_PANEL, NAME_LABEL_Y, NAME_HINT_Y, NAME_BOX } = MENU_LAYOUT;
+    this.panel(...NAME_PANEL);
+    this.text("PILOT NAME", NAME_PANEL[0] + 20, NAME_LABEL_Y + 28, {
       font: "36px sans-serif",
       color: "rgb(135,206,250)",
     });
 
-    const box = MENU_LAYOUT.NAME_BOX;
+    const hint = menu.playerName
+      ? "Backspace / Delete to edit"
+      : "Click the box below to type your name";
+    this.text(hint, NAME_PANEL[0] + 20, NAME_HINT_Y + 18, {
+      font: "24px sans-serif",
+      color: "rgb(150,160,180)",
+    });
+
+    const box = NAME_BOX;
     this.ctx.fillStyle = "rgb(20,25,50)";
     this._roundRect(...box, sc(6));
     this.ctx.fill();
@@ -240,22 +219,56 @@ export class Renderer {
     } else if (!displayName) {
       displayName = "Enter name...";
     }
-    this.text(displayName.slice(0, MAX_NAME_LENGTH), box[0] + sc(12), box[1] + sc(32), {
-      font: "42px sans-serif",
-      color: menu.nameInputActive ? "#fff" : "#b4b4b4",
-    });
 
-    this.wrappedText(
-      "Click box to type · Backspace / Delete to edit",
-      namePanel[0] + 20,
-      namePanel[1] + namePanel[3] - sc(52),
-      {
-        font: "32px sans-serif",
-        color: "#aaa",
-        maxWidth: namePanel[2] - 40,
-        lineGap: sc(22),
-      },
+    this.ctx.fillStyle = menu.nameInputActive ? "#fff" : "#b4b4b4";
+    this.ctx.font = "36px sans-serif";
+    this.ctx.textAlign = "left";
+    this.ctx.textBaseline = "middle";
+    this.ctx.fillText(
+      displayName.slice(0, MAX_NAME_LENGTH),
+      box[0] + sc(14),
+      box[1] + box[3] / 2,
     );
+    this.ctx.textBaseline = "alphabetic";
+  }
+
+  drawMenuFooter(isMobile) {
+    const { FOOTER_Y, FOOTER_H } = MENU_LAYOUT;
+    this.ctx.fillStyle = "rgba(5,8,22,0.82)";
+    this.ctx.fillRect(0, FOOTER_Y, BASE_WIDTH, FOOTER_H);
+    const controls = isMobile
+      ? "Enter: Start  |  Touch controls on mobile"
+      : "Enter: Start  |  F11: Fullscreen";
+    this.centeredWrapped(controls, FOOTER_Y + 14, {
+      font: "32px sans-serif",
+      color: "#ccc",
+      lineGap: sc(24),
+      maxWidth: BASE_WIDTH - sc(48),
+    });
+    this.centeredWrapped("An Ansh Jaiswal production", FOOTER_Y + 46, {
+      font: "24px sans-serif",
+      color: "rgb(140,155,180)",
+      lineGap: sc(24),
+      maxWidth: BASE_WIDTH - sc(48),
+    });
+  }
+
+  drawMenu(menu, bg, pointer, isMobile = false) {
+    this.drawMenuBackground();
+
+    this.ctx.fillStyle = "rgba(0,0,0,0.35)";
+    this.ctx.fillRect(0, 0, BASE_WIDTH, sc(170));
+
+    this.centeredText(["SPARSH IN SPACE"], sc(35), {
+      font: "bold 72px sans-serif",
+    });
+    this.centeredWrapped(
+      "Arthur Tesla vs. Sparsh Akuma — stop the Chunking Express.",
+      sc(92),
+      { font: "32px sans-serif", color: "rgb(180,210,255)", lineGap: sc(28) },
+    );
+
+    this.drawNamePanel(menu);
 
     if (!menu.showStoryPanel) this.drawLeaderboard();
 
