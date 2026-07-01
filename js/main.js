@@ -6,6 +6,7 @@ import { Game } from "./game.js";
 import { InputManager } from "./input.js";
 import { PilotNameInput } from "./pilot-name-input.js";
 import { pointInRect } from "./render.js";
+import { isMobileDevice } from "./ui.js";
 
 const MOBILE_BAR_HEIGHT = 80;
 
@@ -25,12 +26,9 @@ let scale = 1;
 let mobileUiEnabled = false;
 let lastPilotMenuKey = "";
 let lastControlBarHeight = -1;
+let lastCanvasTouchTime = 0;
 
 const pilotNameInput = new PilotNameInput(pilotNameEl, canvas, () => scale);
-
-function isMobileDevice() {
-  return window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 900;
-}
 
 function controlBarHeightForState(state, showStoryPanel = false) {
   if (!state) return 0;
@@ -52,6 +50,7 @@ function syncControlBar(state, showStoryPanel = false) {
   const showBar = (mobileUiEnabled && (playing || dialogue || storyOpen)) || endGame;
 
   controlBar.classList.toggle("visible", showBar);
+  controlBar.setAttribute("aria-hidden", showBar ? "false" : "true");
   playControls.classList.toggle("hidden", !playing);
   dialogueControls.classList.toggle("hidden", !dialogue);
   endControls.classList.toggle("hidden", !endGame);
@@ -88,6 +87,7 @@ function updatePilotNameInput() {
 
   if (showInput) {
     pilotNameInput.show(game.menu.playerName);
+    pilotNameInput.position();
     if (menuKey !== lastPilotMenuKey) {
       pilotNameInput.focus();
       game.menu.nameInputActive = true;
@@ -135,8 +135,11 @@ function resize(gameState = null, showStoryPanel = null) {
   canvas.style.height = `${h}px`;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-  if (mobile || state === GameState.GAME_OVER || state === GameState.VICTORY
-    || (state === GameState.MENU && storyOpen)) {
+  const matchCanvasWidth = mobile
+    || state === GameState.GAME_OVER
+    || state === GameState.VICTORY
+    || (state === GameState.MENU && storyOpen);
+  if (matchCanvasWidth) {
     controlBar.style.width = `${w}px`;
   } else {
     controlBar.style.width = "";
@@ -145,6 +148,14 @@ function resize(gameState = null, showStoryPanel = null) {
   if (pilotNameInput.isVisible()) {
     pilotNameInput.position();
   }
+}
+
+function layoutRefresh() {
+  if (!game) {
+    resize();
+    return;
+  }
+  resize(game.state, game.menu.showStoryPanel);
 }
 
 const input = new InputManager();
@@ -157,8 +168,7 @@ function pointerFromEvent(e) {
   return input.pointer;
 }
 
-canvas.addEventListener("click", (e) => {
-  const ptr = pointerFromEvent(e);
+function handleCanvasPointer(ptr) {
   if (
     game?.state === GameState.MENU
     && !game.menu.showStoryPanel
@@ -168,20 +178,19 @@ canvas.addEventListener("click", (e) => {
     game.menu.nameInputActive = true;
     return;
   }
-  game.handleClick(ptr);
+  game?.handleClick(ptr);
+}
+
+canvas.addEventListener("click", (e) => {
+  if (performance.now() - lastCanvasTouchTime < 500) return;
+  handleCanvasPointer(pointerFromEvent(e));
 });
 
 canvas.addEventListener("touchstart", (e) => {
-  if (game.state === GameState.MENU) {
-    e.preventDefault();
-    const ptr = pointerFromEvent(e);
-    if (!game.menu.showStoryPanel && pointInRect(ptr, game.menu.nameBox)) {
-      pilotNameInput.focus();
-      game.menu.nameInputActive = true;
-      return;
-    }
-    game.handleClick(ptr);
-  }
+  if (game?.state !== GameState.MENU) return;
+  e.preventDefault();
+  lastCanvasTouchTime = performance.now();
+  handleCanvasPointer(pointerFromEvent(e));
 }, { passive: false });
 
 window.addEventListener("keydown", (e) => {
@@ -189,12 +198,15 @@ window.addEventListener("keydown", (e) => {
   game?.handleKeyDown(e.key);
 });
 
-window.addEventListener("resize", resize);
+window.addEventListener("resize", layoutRefresh);
 window.addEventListener("orientationchange", () => {
-  requestAnimationFrame(resize);
+  requestAnimationFrame(layoutRefresh);
 });
 if (window.visualViewport) {
-  window.visualViewport.addEventListener("resize", resize);
+  window.visualViewport.addEventListener("resize", layoutRefresh);
+  window.visualViewport.addEventListener("scroll", () => {
+    if (pilotNameInput.isVisible()) pilotNameInput.position();
+  });
 }
 
 function loop(timestamp) {
@@ -215,7 +227,7 @@ function loop(timestamp) {
 }
 
 async function boot() {
-  resize();
+  layoutRefresh();
   try {
     await preloadGameAssets();
     game = new Game(canvas, input);

@@ -290,13 +290,13 @@ export class Renderer {
     this.button(closeRect, "CLOSE", pointInRect(pointer, closeRect));
 
     const hint = isMobile
-      ? "Tap Close below or outside the panel to return"
+      ? "Tap Close or use the button below"
       : "Press Esc or tap Close to return";
-    this.centeredWrapped(hint, panel[1] + panel[3] - sc(52), {
-      font: "28px sans-serif",
+    this.centeredWrapped(hint, panel[1] + panel[3] - sc(72), {
+      font: "26px sans-serif",
       color: "#aaa",
       maxWidth: innerW,
-      lineGap: sc(24),
+      lineGap: sc(22),
     });
   }
 

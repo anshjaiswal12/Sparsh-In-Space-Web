@@ -30,6 +30,7 @@ import {
   startMusic,
 } from "./assets.js";
 import { Renderer, pointInRect } from "./render.js";
+import { isMobileDevice } from "./ui.js";
 
 function randomEnemyX() {
   return Math.floor(Math.random() * (BASE_WIDTH - SPRITE_SIZE));
@@ -279,16 +280,19 @@ export class Game {
   handleStoryPanelInput(pointer) {
     const m = this.menu;
     if (pointInRect(pointer, m.storyCloseButton)) {
-      m.showStoryPanel = false;
+      this.closeStoryPanel();
       return;
     }
     if (!pointInRect(pointer, m.storyPanel)) {
-      m.showStoryPanel = false;
+      this.closeStoryPanel();
     }
   }
 
   closeStoryPanel() {
     this.menu.showStoryPanel = false;
+    if (this.pilotNameInput && this.state === GameState.MENU) {
+      requestAnimationFrame(() => this.pilotNameInput.focus());
+    }
   }
 
   handleMenuInput(pointer) {
@@ -312,7 +316,7 @@ export class Game {
   handleMenuKey(key) {
     const m = this.menu;
     if (key === "Escape" && m.showStoryPanel) {
-      m.showStoryPanel = false;
+      this.closeStoryPanel();
       return;
     }
     if (m.showStoryPanel) return;
@@ -387,15 +391,13 @@ export class Game {
 
     if (this.state === GameState.MENU) {
       r.clear();
-      const isMobile = window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 900;
-      r.drawMenu(this.menu, this.menuBg, pointer, isMobile);
+      r.drawMenu(this.menu, this.menuBg, pointer, isMobileDevice());
       return;
     }
 
     if (this.state === GameState.STORY_CUTSCENE) {
       r.clear();
-      const isMobile = window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 900;
-      r.drawCutscene(this.cutsceneLineIndex, this.portraits, this.backgrounds.bg6, isMobile);
+      r.drawCutscene(this.cutsceneLineIndex, this.portraits, this.backgrounds.bg6, isMobileDevice());
       return;
     }
 
@@ -491,6 +493,7 @@ export class Game {
 
     if (this.state === GameState.STORY_CUTSCENE) {
       if (key === "Enter" || key === " ") this.advanceCutscene();
+      return;
     }
   }
 

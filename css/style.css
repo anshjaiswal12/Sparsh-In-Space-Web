@@ -60,9 +60,12 @@ body {
   color: #fff;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   font-weight: 500;
+  line-height: 1.2;
   outline: none;
   caret-color: #fff;
   touch-action: manipulation;
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 #pilot-name-input.visible {
@@ -103,6 +106,7 @@ body {
   background: linear-gradient(180deg, rgba(8, 12, 30, 0.98) 0%, rgba(5, 8, 22, 1) 100%);
   border-top: 2px solid rgba(135, 206, 250, 0.35);
   box-shadow: 0 -4px 24px rgba(0, 40, 100, 0.35);
+  touch-action: manipulation;
 }
 
 #app.mobile #control-bar.visible {
@@ -287,5 +291,11 @@ body {
   .advance-btn {
     height: 48px;
     font-size: 0.95rem;
+  }
+
+  .end-btn {
+    height: 48px;
+    font-size: 0.9rem;
+    max-width: 180px;
   }
 }

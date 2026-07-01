@@ -1,5 +1,7 @@
 /** Keyboard and touch input */
 
+import { guardRapidAction } from "./ui.js";
+
 export class InputManager {
   constructor() {
     this.keys = new Set();
@@ -49,27 +51,24 @@ export class InputManager {
     hold(fire, (v) => { this.touchFire = v; });
   }
 
-  _bindDialogueButton() {
-    const advance = document.getElementById("btn-advance");
-    const request = (e) => {
+  _bindTapButton(el, handler) {
+    const fire = guardRapidAction((e) => {
       e.preventDefault();
+      handler?.();
+    });
+    el.addEventListener("click", fire);
+    el.addEventListener("touchstart", fire, { passive: false });
+  }
+
+  _bindDialogueButton() {
+    this._bindTapButton(document.getElementById("btn-advance"), () => {
       this.advanceRequested = true;
-    };
-    advance.addEventListener("touchstart", request, { passive: false });
-    advance.addEventListener("click", request);
+    });
   }
 
   _bindEndButtons() {
-    const retry = document.getElementById("btn-retry");
-    const menu = document.getElementById("btn-menu");
-    const fire = (handler) => (e) => {
-      e.preventDefault();
-      handler?.();
-    };
-    retry.addEventListener("click", fire(() => this.onRetry?.()));
-    retry.addEventListener("touchstart", fire(() => this.onRetry?.()), { passive: false });
-    menu.addEventListener("click", fire(() => this.onMainMenu?.()));
-    menu.addEventListener("touchstart", fire(() => this.onMainMenu?.()), { passive: false });
+    this._bindTapButton(document.getElementById("btn-retry"), () => this.onRetry?.());
+    this._bindTapButton(document.getElementById("btn-menu"), () => this.onMainMenu?.());
   }
 
   setEndGameHandlers({ onRetry, onMainMenu }) {
@@ -78,13 +77,7 @@ export class InputManager {
   }
 
   _bindStoryCloseButton() {
-    const close = document.getElementById("btn-story-close");
-    const fire = (handler) => (e) => {
-      e.preventDefault();
-      handler?.();
-    };
-    close.addEventListener("click", fire(() => this.onStoryClose?.()));
-    close.addEventListener("touchstart", fire(() => this.onStoryClose?.()), { passive: false });
+    this._bindTapButton(document.getElementById("btn-story-close"), () => this.onStoryClose?.());
   }
 
   setStoryMenuHandlers({ onStoryClose }) {
