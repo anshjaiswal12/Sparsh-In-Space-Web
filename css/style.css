@@ -21,10 +21,16 @@ body {
   position: relative;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
   background: radial-gradient(ellipse at center, #0a1530 0%, #000 70%);
+  padding:
+    env(safe-area-inset-top, 0px)
+    env(safe-area-inset-right, 0px)
+    env(safe-area-inset-bottom, 0px)
+    env(safe-area-inset-left, 0px);
 }
 
 #game {
@@ -49,11 +55,10 @@ body {
   display: none;
 }
 
-/* Touch controls — shown on mobile / coarse pointers */
+/* Touch controls — anchored to canvas via JS (main.js) */
 #touch-controls {
   display: none;
-  position: absolute;
-  inset: 0;
+  position: fixed;
   pointer-events: none;
   z-index: 10;
 }
@@ -69,7 +74,7 @@ body {
   border-radius: 12px;
   background: rgba(40, 90, 170, 0.75);
   color: #fff;
-  font-size: clamp(1rem, 4vw, 1.4rem);
+  font-size: clamp(0.9rem, 3.5vw, 1.4rem);
   font-weight: bold;
   user-select: none;
   -webkit-user-select: none;
@@ -82,31 +87,58 @@ body {
 }
 
 #btn-left {
-  left: max(12px, 2vw);
-  bottom: max(16px, 3vh);
-  width: clamp(64px, 18vw, 96px);
-  height: clamp(64px, 18vw, 96px);
+  left: max(8px, 2%);
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  width: clamp(56px, 16%, 96px);
+  height: clamp(56px, 16%, 96px);
 }
 
 #btn-right {
-  left: calc(max(12px, 2vw) + clamp(72px, 20vw, 108px));
-  bottom: max(16px, 3vh);
-  width: clamp(64px, 18vw, 96px);
-  height: clamp(64px, 18vw, 96px);
+  left: calc(max(8px, 2%) + clamp(60px, 17%, 104px));
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  width: clamp(56px, 16%, 96px);
+  height: clamp(56px, 16%, 96px);
 }
 
 #btn-fire {
-  right: max(12px, 2vw);
-  bottom: max(16px, 3vh);
-  width: clamp(88px, 24vw, 120px);
-  height: clamp(64px, 18vw, 96px);
+  right: max(8px, 2%);
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  width: clamp(72px, 22%, 120px);
+  height: clamp(56px, 16%, 96px);
+}
+
+@media (max-height: 700px) {
+  #btn-left,
+  #btn-right,
+  #btn-fire {
+    width: clamp(48px, 14%, 80px);
+    height: clamp(48px, 14%, 80px);
+    font-size: clamp(0.8rem, 3vw, 1.1rem);
+  }
+
+  #btn-right {
+    left: calc(max(8px, 2%) + clamp(52px, 15%, 88px));
+  }
+
+  #btn-fire {
+    width: clamp(64px, 18%, 100px);
+  }
 }
 
 @media (max-height: 500px) and (orientation: landscape) {
   #btn-left,
   #btn-right,
   #btn-fire {
-    bottom: 8px;
-    height: 56px;
+    bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+    width: clamp(44px, 12%, 72px);
+    height: clamp(44px, 12%, 72px);
+  }
+
+  #btn-right {
+    left: calc(max(8px, 2%) + clamp(48px, 13%, 76px));
+  }
+
+  #btn-fire {
+    width: clamp(60px, 16%, 96px);
   }
 }

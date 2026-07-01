@@ -13,10 +13,34 @@ const ctx = canvas.getContext("2d");
 let scale = 1;
 let displayWidth = 0;
 let displayHeight = 0;
+let touchControlsEnabled = false;
+let touchControlsActive = false;
+
+function isMobileDevice() {
+  return window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 900;
+}
+
+function syncTouchControlsVisible() {
+  touchControls.classList.toggle("visible", touchControlsEnabled && touchControlsActive);
+}
+
+export function updateTouchControlsForState(state) {
+  touchControlsActive = state === GameState.PLAYING || state === GameState.STORY_CUTSCENE;
+  syncTouchControlsVisible();
+}
+
+function positionTouchOverlay() {
+  const rect = canvas.getBoundingClientRect();
+  touchControls.style.left = `${rect.left}px`;
+  touchControls.style.top = `${rect.top}px`;
+  touchControls.style.width = `${rect.width}px`;
+  touchControls.style.height = `${rect.height}px`;
+}
 
 function resize() {
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
+  const vv = window.visualViewport;
+  const vw = vv?.width ?? window.innerWidth;
+  const vh = vv?.height ?? window.innerHeight;
   const aspect = BASE_WIDTH / BASE_HEIGHT;
   let w, h;
   if (vw / vh > aspect) {
@@ -37,7 +61,9 @@ function resize() {
   canvas.style.height = `${h}px`;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-  touchControls.classList.toggle("visible", window.matchMedia("(pointer: coarse)").matches || vw < 900);
+  touchControlsEnabled = isMobileDevice();
+  requestAnimationFrame(positionTouchOverlay);
+  syncTouchControlsVisible();
 }
 
 const input = new InputManager();
@@ -66,6 +92,13 @@ window.addEventListener("keydown", (e) => {
 });
 
 window.addEventListener("resize", resize);
+window.addEventListener("orientationchange", () => {
+  requestAnimationFrame(resize);
+});
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", resize);
+  window.visualViewport.addEventListener("scroll", positionTouchOverlay);
+}
 
 function loop(timestamp) {
   if (!game.lastFrame) game.lastFrame = timestamp;
@@ -79,6 +112,7 @@ function loop(timestamp) {
   }
 
   game.draw(performance.now());
+  updateTouchControlsForState(game.state);
   requestAnimationFrame(loop);
 }
 
