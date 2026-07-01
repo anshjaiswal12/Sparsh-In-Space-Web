@@ -100,7 +100,10 @@ export function bulletOffsets(count) {
 
 /** Main menu layout — 1280×960 pixel coords, panels must not overlap */
 const NAME_PANEL_Y = 175;
-const NAME_PANEL_H = 168;
+const NAME_PANEL_H = 180;
+
+export const MENU_CREDIT = "Game made by Arth";
+export const GAME_CREDIT = "An Arth Jaiswal Production";
 
 export const MENU_LAYOUT = {
   MARGIN: 64,
@@ -109,14 +112,15 @@ export const MENU_LAYOUT = {
   BTN_H: 52,
   get BTN_X() { return (BASE_WIDTH - this.BTN_W) / 2; },
   NAME_PANEL: [64, NAME_PANEL_Y, 400, NAME_PANEL_H],
-  NAME_LABEL_Y: NAME_PANEL_Y + 20,
-  NAME_HINT_Y: NAME_PANEL_Y + 56,
-  NAME_BOX: [84, NAME_PANEL_Y + 88, 360, 52],
+  NAME_LABEL_Y: NAME_PANEL_Y + 14,
+  NAME_HINT_Y: NAME_PANEL_Y + 46,
+  NAME_HINT_MAX_WIDTH: 360,
+  NAME_BOX: [84, NAME_PANEL_Y + 92, 360, 50],
   SCORES_PANEL: [BASE_WIDTH - 64 - 400, 175, 400, 360],
   PLAY_BUTTON: null,
   STORY_BUTTON: null,
   FOOTER_Y: 884,
-  FOOTER_H: 72,
+  FOOTER_H: 76,
 };
 MENU_LAYOUT.PLAY_BUTTON = [MENU_LAYOUT.BTN_X, 580, MENU_LAYOUT.BTN_W, MENU_LAYOUT.BTN_H];
 MENU_LAYOUT.STORY_BUTTON = [MENU_LAYOUT.BTN_X, 655, MENU_LAYOUT.BTN_W, MENU_LAYOUT.BTN_H];

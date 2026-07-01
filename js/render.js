@@ -4,8 +4,10 @@ import {
   BASE_HEIGHT,
   BASE_WIDTH,
   CUTSCENE_LINES,
+  GAME_CREDIT,
   LEVELS,
   MAX_LEADERBOARD_ENTRIES,
+  MENU_CREDIT,
   MENU_LAYOUT,
   MENU_STORY_LINES,
   PORTRAIT_SIZE,
@@ -156,6 +158,21 @@ export class Renderer {
     this.fitText(`Ship: ${shipName}`, sc(10), sc(120), { color: "rgb(135,206,250)", maxWidth: sc(420) });
     this.fitText(`Pilot: ${playerName}`, sc(10), sc(145), { color: "rgb(200,220,255)", maxWidth: sc(420) });
     this.fitText(`High: ${highScore}`, sc(650), sc(35), { color: "rgb(255,215,0)", maxWidth: sc(600) });
+    this.drawGameCredit();
+  }
+
+  drawGameCredit() {
+    const font = "24px sans-serif";
+    const color = "rgb(200,210,230)";
+    this.ctx.font = font;
+    const text = GAME_CREDIT;
+    const width = this.ctx.measureText(text).width;
+    const x = (BASE_WIDTH - width) / 2;
+    const y = BASE_HEIGHT - sc(20);
+    this.ctx.fillStyle = "rgba(0,0,0,0.45)";
+    this.ctx.fillRect(x - sc(12), y - sc(22), width + sc(24), sc(28));
+    this.ctx.fillStyle = color;
+    this.ctx.fillText(text, x, y);
   }
 
   drawLeaderboard() {
@@ -188,19 +205,19 @@ export class Renderer {
   }
 
   drawNamePanel(menu) {
-    const { NAME_PANEL, NAME_LABEL_Y, NAME_HINT_Y, NAME_BOX } = MENU_LAYOUT;
+    const { NAME_PANEL, NAME_LABEL_Y, NAME_HINT_Y, NAME_HINT_MAX_WIDTH, NAME_BOX } = MENU_LAYOUT;
     this.panel(...NAME_PANEL);
-    this.text("PILOT NAME", NAME_PANEL[0] + 20, NAME_LABEL_Y + 28, {
+    this.text("PILOT NAME", NAME_PANEL[0] + 20, NAME_LABEL_Y + 24, {
       font: "36px sans-serif",
       color: "rgb(135,206,250)",
     });
 
-    const hint = menu.playerName
-      ? "Edit your name below, then press Enter"
-      : "Type your pilot name below";
-    this.text(hint, NAME_PANEL[0] + 20, NAME_HINT_Y + 18, {
+    const hint = menu.playerName ? "Backspace to edit" : "Type your name below";
+    this.wrappedText(hint, NAME_PANEL[0] + 20, NAME_HINT_Y + 16, {
       font: "24px sans-serif",
       color: "rgb(150,160,180)",
+      maxWidth: NAME_HINT_MAX_WIDTH,
+      lineGap: sc(20),
     });
 
     const box = NAME_BOX;
@@ -225,7 +242,7 @@ export class Renderer {
       lineGap: sc(24),
       maxWidth: BASE_WIDTH - sc(48),
     });
-    this.centeredWrapped("An Ansh Jaiswal production", FOOTER_Y + 46, {
+    this.centeredWrapped(MENU_CREDIT, FOOTER_Y + 44, {
       font: "24px sans-serif",
       color: "rgb(140,155,180)",
       lineGap: sc(24),
