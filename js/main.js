@@ -4,6 +4,8 @@ import { preloadGameAssets } from "./assets.js";
 import { BASE_HEIGHT, BASE_WIDTH, CUTSCENE_LINES, GameState } from "./config.js";
 import { Game } from "./game.js";
 import { InputManager } from "./input.js";
+import { PilotNameInput } from "./pilot-name-input.js";
+import { pointInRect } from "./render.js";
 
 const MOBILE_BAR_HEIGHT = 80;
 
@@ -14,10 +16,14 @@ const controlBar = document.getElementById("control-bar");
 const playControls = document.getElementById("play-controls");
 const dialogueControls = document.getElementById("dialogue-controls");
 const dialogueProgress = document.getElementById("dialogue-progress");
+const pilotNameEl = document.getElementById("pilot-name-input");
 const ctx = canvas.getContext("2d");
 
 let scale = 1;
 let mobileUiEnabled = false;
+let lastPilotMenuKey = "";
+
+const pilotNameInput = new PilotNameInput(pilotNameEl, canvas, () => scale);
 
 function isMobileDevice() {
   return window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 900;
@@ -43,6 +49,28 @@ export function updateMobileUiForState(state, cutsceneLineIndex = 0) {
       ? "Begin Level 6 ▶"
       : "Continue ▶";
   }
+}
+
+function updatePilotNameInput() {
+  if (!game) return;
+
+  const menuKey = `${game.state}:${game.menu.showStoryPanel}`;
+  const showInput = game.state === GameState.MENU && !game.menu.showStoryPanel;
+
+  if (showInput) {
+    pilotNameInput.show(game.menu.playerName);
+    if (menuKey !== lastPilotMenuKey) {
+      pilotNameInput.focus();
+      game.menu.nameInputActive = true;
+    }
+  } else {
+    pilotNameInput.hide();
+    if (game.state === GameState.MENU) {
+      game.menu.nameInputActive = false;
+    }
+  }
+
+  lastPilotMenuKey = menuKey;
 }
 
 function resize() {
@@ -80,6 +108,10 @@ function resize() {
   } else {
     controlBar.style.width = "";
   }
+
+  if (pilotNameInput.isVisible()) {
+    pilotNameInput.position();
+  }
 }
 
 const input = new InputManager();
@@ -93,17 +125,34 @@ function pointerFromEvent(e) {
 }
 
 canvas.addEventListener("click", (e) => {
-  game.handleClick(pointerFromEvent(e));
+  const ptr = pointerFromEvent(e);
+  if (
+    game?.state === GameState.MENU
+    && !game.menu.showStoryPanel
+    && pointInRect(ptr, game.menu.nameBox)
+  ) {
+    pilotNameInput.focus();
+    game.menu.nameInputActive = true;
+    return;
+  }
+  game.handleClick(ptr);
 });
 
 canvas.addEventListener("touchstart", (e) => {
   if (game.state === GameState.MENU) {
     e.preventDefault();
-    game.handleClick(pointerFromEvent(e));
+    const ptr = pointerFromEvent(e);
+    if (!game.menu.showStoryPanel && pointInRect(ptr, game.menu.nameBox)) {
+      pilotNameInput.focus();
+      game.menu.nameInputActive = true;
+      return;
+    }
+    game.handleClick(ptr);
   }
 }, { passive: false });
 
 window.addEventListener("keydown", (e) => {
+  if (pilotNameInput.isFocused()) return;
   game?.handleKeyDown(e.key);
 });
 
@@ -128,6 +177,7 @@ function loop(timestamp) {
 
   game.draw(performance.now());
   updateMobileUiForState(game.state, game.cutsceneLineIndex);
+  updatePilotNameInput();
   requestAnimationFrame(loop);
 }
 
@@ -136,7 +186,27 @@ async function boot() {
   try {
     await preloadGameAssets();
     game = new Game(canvas, input);
+    game.setPilotNameInput(pilotNameInput);
     await game.init();
+
+    pilotNameInput.bind({
+      onChange: (value) => {
+        game.menu.playerName = value;
+      },
+      onFocus: () => {
+        game.menu.nameInputActive = true;
+      },
+      onBlur: () => {
+        game.menu.nameInputActive = false;
+        game.menu.playerName = pilotNameEl.value.slice(0, 12);
+      },
+      onConfirm: () => {
+        if (game.state === GameState.MENU && !game.menu.showStoryPanel) {
+          game.startFromMenu();
+        }
+      },
+    });
+
     loader.classList.add("hidden");
     requestAnimationFrame(loop);
   } catch (err) {

@@ -6,7 +6,6 @@ import {
   CUTSCENE_LINES,
   LEVELS,
   MAX_LEADERBOARD_ENTRIES,
-  MAX_NAME_LENGTH,
   MENU_LAYOUT,
   MENU_STORY_LINES,
   PORTRAIT_SIZE,
@@ -197,8 +196,8 @@ export class Renderer {
     });
 
     const hint = menu.playerName
-      ? "Backspace / Delete to edit"
-      : "Click the box below to type your name";
+      ? "Edit your name below, then press Enter"
+      : "Type your pilot name below";
     this.text(hint, NAME_PANEL[0] + 20, NAME_HINT_Y + 18, {
       font: "24px sans-serif",
       color: "rgb(150,160,180)",
@@ -211,25 +210,6 @@ export class Renderer {
     this.ctx.strokeStyle = menu.nameInputActive ? "#fff" : "#a0a0a0";
     this.ctx.lineWidth = 2;
     this.ctx.stroke();
-
-    let displayName = menu.playerName;
-    if (menu.nameInputActive) {
-      if (!displayName && Math.floor(performance.now() / 500) % 2 === 0) displayName = "|";
-      else if (displayName && Math.floor(performance.now() / 500) % 2 === 0) displayName += "|";
-    } else if (!displayName) {
-      displayName = "Enter name...";
-    }
-
-    this.ctx.fillStyle = menu.nameInputActive ? "#fff" : "#b4b4b4";
-    this.ctx.font = "36px sans-serif";
-    this.ctx.textAlign = "left";
-    this.ctx.textBaseline = "middle";
-    this.ctx.fillText(
-      displayName.slice(0, MAX_NAME_LENGTH),
-      box[0] + sc(14),
-      box[1] + box[3] / 2,
-    );
-    this.ctx.textBaseline = "alphabetic";
   }
 
   drawMenuFooter(isMobile) {

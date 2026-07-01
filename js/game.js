@@ -79,6 +79,11 @@ export class Game {
     this.lastFrame = 0;
     this.accumulator = 0;
     this.frameMs = 1000 / 60;
+    this.pilotNameInput = null;
+  }
+
+  setPilotNameInput(pilotNameInput) {
+    this.pilotNameInput = pilotNameInput;
   }
 
   async init() {
@@ -134,6 +139,9 @@ export class Game {
   }
 
   resolvedName() {
+    if (this.pilotNameInput?.isVisible()) {
+      this.menu.playerName = this.pilotNameInput.getValue();
+    }
     const name = (this.menu.playerName.trim() || "Pilot").slice(0, 12);
     savePlayerName(name);
     return name;
@@ -141,6 +149,8 @@ export class Game {
 
   startFromMenu() {
     this.playerName = this.resolvedName();
+    this.pilotNameInput?.hide();
+    this.menu.nameInputActive = false;
     this.score = 0;
     this.isNewHighScore = false;
     this.applyLevel(0);
@@ -268,10 +278,18 @@ export class Game {
     const m = this.menu;
     if (m.showStoryPanel) return;
 
-    if (pointInRect(pointer, m.nameBox)) m.nameInputActive = true;
-    else if (pointInRect(pointer, m.playButton)) this.startFromMenu();
-    else if (pointInRect(pointer, m.storyButton)) m.showStoryPanel = true;
-    else m.nameInputActive = false;
+    if (pointInRect(pointer, m.nameBox)) {
+      this.pilotNameInput?.focus();
+      m.nameInputActive = true;
+    } else if (pointInRect(pointer, m.playButton)) {
+      this.startFromMenu();
+    } else if (pointInRect(pointer, m.storyButton)) {
+      m.showStoryPanel = true;
+      this.pilotNameInput?.hide();
+      m.nameInputActive = false;
+    } else {
+      m.nameInputActive = false;
+    }
   }
 
   handleMenuKey(key) {
@@ -282,18 +300,9 @@ export class Game {
     }
     if (m.showStoryPanel) return;
 
-    if ((key === "Enter" || key === " ") && !m.nameInputActive) {
-      this.startFromMenu();
-      return;
-    }
-    if (!m.nameInputActive) return;
+    if (this.pilotNameInput?.isFocused()) return;
 
-    if (key === "Backspace") m.playerName = m.playerName.slice(0, -1);
-    else if (key === "Delete") m.playerName = "";
-    else if (key.length === 1 && key !== " " && m.playerName.length < 12) {
-      if (key.charCodeAt(0) >= 32) m.playerName += key;
-    } else if (key === "Enter") {
-      m.nameInputActive = false;
+    if (key === "Enter" || key === " ") {
       this.startFromMenu();
     }
   }

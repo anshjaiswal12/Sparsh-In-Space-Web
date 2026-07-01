@@ -49,6 +49,34 @@ body {
   box-shadow: 0 0 40px rgba(0, 80, 160, 0.35);
 }
 
+#pilot-name-input {
+  position: fixed;
+  display: none;
+  z-index: 15;
+  margin: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #fff;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-weight: 500;
+  outline: none;
+  caret-color: #fff;
+  touch-action: manipulation;
+}
+
+#pilot-name-input.visible {
+  display: block;
+}
+
+#pilot-name-input::placeholder {
+  color: rgba(180, 180, 180, 0.85);
+}
+
+#pilot-name-input:focus {
+  background: rgba(20, 25, 50, 0.35);
+}
+
 #loader {
   position: absolute;
   inset: 0;

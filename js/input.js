@@ -10,6 +10,8 @@ export class InputManager {
     this.pointer = { x: 0, y: 0 };
 
     window.addEventListener("keydown", (e) => {
+      const tag = document.activeElement?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
       if (["ArrowLeft", "ArrowRight", " ", "Enter", "Escape", "Backspace", "Delete"].includes(e.key)) {
         e.preventDefault();
       }
